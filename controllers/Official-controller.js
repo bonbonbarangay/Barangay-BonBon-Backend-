@@ -54,9 +54,7 @@ export const getAllOfficials = async (request, response) => {
   try {
     const getAllOfficial = await pool.query("SELECT * FROM public.officials");
 
-    return response.status(200).json({
-      message: getAllOfficial.rows,
-    });
+    return response.status(200).json(getAllOfficial.rows);
   } catch (error) {
     return response.status(500).json({
       message: "Internal server error",
@@ -70,30 +68,40 @@ export const updateOfficial = async (request, response) => {
     const { fullname, position, type, image, cloudinaryid } = request.body;
     const { id } = request.params;
 
-    if (cloudinaryid) {
-      await cloudinary.v2.uploader.destroy(cloudinaryid);
+    let imageUrl;
+    let cloudinaryId;
+
+    const officialResult = await pool.query(
+      "SELECT image, cloudinaryid FROM public.officials WHERE id = $1",
+      [id]
+    );
+    if (officialResult.rowCount === 0) {
+      return response.status(404).json({
+        message: "Official not found",
+      });
     }
 
-    const uploadImageUpdate = await cloudinary.v2.uploader.upload(image, {
-      upload_preset: "",
-    });
-
-    if (!uploadImageUpdate) {
-      return response.status(400).json({
-        message: "Cloudinary upload error",
+    if (officialResult.rows[0].image == image) {
+      imageUrl = officialResult.rows[0].image;
+      cloudinaryId = officialResult.rows[0].cloudinaryid;
+    } else {
+      await cloudinary.v2.uploader.destroy(cloudinaryid);
+      const uploadImageUpdate = await cloudinary.v2.uploader.upload(image, {
+        upload_preset: "",
       });
+
+      if (!uploadImageUpdate) {
+        return response.status(400).json({
+          message: "Cloudinary upload error",
+        });
+      }
+      imageUrl = uploadImageUpdate.url;
+      cloudinaryId = uploadImageUpdate.public_id;
     }
 
     const updateAnnoucement = await pool.query(
       "UPDATE public.officials SET fullname = $1, position = $2, type = $3 , image = $4 , cloudinaryid = $5 WHERE id = $6 RETURNING *;",
-      [
-        fullname,
-        position,
-        type,
-        uploadImageUpdate.url,
-        uploadImageUpdate.public_id,
-        id,
-      ]
+      [fullname, position, type, imageUrl, cloudinaryId, id]
     );
 
     if (updateAnnoucement.rowCount === 0) {
@@ -117,7 +125,6 @@ export const deleteOfficial = async (request, response) => {
   try {
     const { cloudinaryid } = request.body;
     const { id } = request.params;
-
     if (cloudinaryid) {
       await cloudinary.v2.uploader.destroy(cloudinaryid);
     }
