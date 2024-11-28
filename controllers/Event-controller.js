@@ -110,3 +110,32 @@ export const updateEvent = async (request, response) => {
     });
   }
 };
+export const deleteEvent = async (request, response) => {
+  try {
+    const { cloudinaryid } = request.body;
+    const { id } = request.params;
+    if (cloudinaryid) {
+      await cloudinary.v2.uploader.destroy(cloudinaryid);
+    }
+
+    const deleteResult = await pool.query(
+      "DELETE FROM public.event WHERE id = $1;",
+      [id]
+    );
+
+    if (deleteResult.rowCount === 0) {
+      return response.status(404).json({
+        message: "Event not found or already deleted.",
+      });
+    }
+
+    return response.status(200).json({
+      message: "Event deleted successfully.",
+    });
+  } catch (error) {
+    return response.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
