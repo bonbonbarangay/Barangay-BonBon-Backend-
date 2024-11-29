@@ -4,6 +4,7 @@ import "dotenv/config";
 import AnnouncementRoutes from "./routes/Announcement-route.js";
 import authenticationRoutes from "./routes/Authentication-route.js";
 import officialsRoutes from "./routes/Official-route.js";
+import householdRoutes from "./routes/Household-route.js";
 import eventRoute from "./routes/Event-route.js";
 import bodyParser from "body-parser";
 
@@ -17,6 +18,7 @@ app.use("/announcement", AnnouncementRoutes);
 app.use("/authentication", authenticationRoutes);
 app.use("/official", officialsRoutes);
 app.use("/event", eventRoute);
+app.use("/household", householdRoutes);
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
