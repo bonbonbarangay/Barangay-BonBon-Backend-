@@ -175,10 +175,85 @@ export const getAllHousehold = async (request, response) => {
   }
 };
 
-export const updateHousehold = async (request, response) => {
+export const acceptPending = async (request, response) => {
   try {
-    const getAllHousehold = await pool.query("SELECT * FROM public.household");
-    return response.status(201).json(getAllHousehold.rows);
+    const { id } = request.params;
+
+    const result = await pool.query(
+      "UPDATE public.household SET pending = $1 WHERE id = $2 RETURNING *;",
+      [false, id]
+    );
+
+    if (result.rowCount === 0) {
+      return response.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    return response.status(200).json({
+      message: "Pending status updated successfully",
+      event: result.rows[0],
+    });
+  } catch (error) {
+    return response.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+export const findById = async (request, response) => {
+  try {
+    const { userid } = request.params;
+
+    const houseHold = await pool.query(
+      "SELECT * FROM  public.household  WHERE userid = $1 ",
+      [userid]
+    );
+    const houseMembers = await pool.query(
+      "SELECT * FROM  public.housemembers  WHERE userid = $1 ",
+      [userid]
+    );
+
+    if (houseHold.rowCount === 0 && houseMembers.rowCount === 0) {
+      return response.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    return response.status(200).json({
+      household: houseHold.rows[0],
+      housemember: houseMembers.rows,
+    });
+  } catch (error) {
+    return response.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+export const deleteHouseHoldAndHouseMembers = async (request, response) => {
+  try {
+    const { userid } = request.params;
+
+    const deleteHouseHold = await pool.query(
+      "DELETE FROM public.household WHERE userid = $1;",
+      [userid]
+    );
+
+    const deleteHouseMembers = await pool.query(
+      "DELETE FROM public.housemembers WHERE userid = $1;",
+      [userid]
+    );
+    if (deleteHouseHold.rowCount === 0 && deleteHouseMembers.rowCount === 0) {
+      return response.status(404).json({
+        message: "HouseHold and HouseMembers  not found or already deleted.",
+      });
+    }
+
+    return response.status(200).json({
+      message: "HouseHold and HouseMembers deleted successfully.",
+    });
   } catch (error) {
     return response.status(500).json({
       message: "Internal server error",
