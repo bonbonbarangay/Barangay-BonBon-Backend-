@@ -29,7 +29,7 @@ export const signIn = async (request, response) => {
 
     return response.status(200).json({
       message: "Sucess Login",
-      login: true,
+      id: user.id,
       token: token,
       type: user.type,
     });

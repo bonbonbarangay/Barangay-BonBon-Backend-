@@ -7,7 +7,7 @@ import officialsRoutes from "./routes/Official-route.js";
 import householdRoutes from "./routes/Household-route.js";
 import eventRoute from "./routes/Event-route.js";
 import bodyParser from "body-parser";
-
+import houseMembers from "./routes/HouseMembers-route.js";
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
@@ -19,6 +19,7 @@ app.use("/authentication", authenticationRoutes);
 app.use("/official", officialsRoutes);
 app.use("/event", eventRoute);
 app.use("/household", householdRoutes);
+app.use("/housemembers", houseMembers);
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
