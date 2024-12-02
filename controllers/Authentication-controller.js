@@ -23,14 +23,9 @@ export const signIn = async (request, response) => {
       });
     }
 
-    const token = GenerateToken({
-      id: user.id,
-    });
-
     return response.status(200).json({
-      message: "Sucess Login",
       id: user.id,
-      token: token,
+      user: user.username,
       type: user.type,
     });
   } catch (error) {
@@ -65,6 +60,57 @@ export const signUp = async (request, response) => {
     return response.status(201).json({
       message: "User created successfully",
       user: createUser.rows[0],
+    });
+  } catch (error) {
+    return response.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+export const updatePassword = async (request, response) => {
+  try {
+    const hash = await bcrypt.genSalt(saltRounds);
+    const { id } = request.params;
+    const { password } = request.body;
+    const passwordHast = await bcrypt.hash(password, hash);
+
+    const updatePassword = await pool.query(
+      "UPDATE public.authentication SET password = $1 WHERE id = $2 RETURNING *;",
+      [passwordHast, id]
+    );
+    if (updatePassword.rowCount === 0) {
+      return response.status(400).json({
+        message: "Password Did not Change",
+      });
+    }
+
+    return response.status(200).json({
+      message: "Password Change",
+    });
+  } catch (error) {
+    return response.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+export const getByUserid = async (request, response) => {
+  try {
+    const { id } = request.params;
+    const getUserById = await pool.query(
+      "SELECT * FROM public.authentication WHERE id = $1",
+      [id]
+    );
+
+    if (getUserById.rowCount === 0) {
+      return response.status(400).json({
+        message: "User not Found",
+      });
+    }
+
+    return response.status(200).json({
+      user: getUserById.rows[0],
     });
   } catch (error) {
     return response.status(500).json({
