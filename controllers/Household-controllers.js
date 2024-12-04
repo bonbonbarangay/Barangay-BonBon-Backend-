@@ -1,12 +1,11 @@
 import pool from "../dbconfig/database-setup.js";
+import cloudinary from "../services/cloudinary.js";
 
 export const createHousehold = async (request, response) => {
   try {
     const {
       userid,
       pending = true,
-      // Default to true if not provided
-      // data1
       lastnamehead1,
       firstnamehead1,
       mihead1,
@@ -27,7 +26,6 @@ export const createHousehold = async (request, response) => {
       highschoolhead1,
       elementaryhead1,
       vocationalcoursehead1,
-      // data2
       lastnamehead2,
       firstnamehead2,
       mihead2,
@@ -48,10 +46,8 @@ export const createHousehold = async (request, response) => {
       highschoolhead2,
       elementaryhead2,
       vocationalcoursehead2,
-      // data3
       members,
       children,
-      // data 4
       question1,
       question2,
       renting,
@@ -59,35 +55,51 @@ export const createHousehold = async (request, response) => {
       question4,
       question5,
       question6,
+      image,
     } = request.body;
-    const currentYear = new Date().getFullYear(); // Get the current year
 
+    const currentYear = new Date().getFullYear();
+    // Check if the user has already filled out the form
     const findUserId = await pool.query(
       "SELECT * FROM public.household WHERE userid = $1",
       [userid]
     );
     if (findUserId.rows.length > 0) {
       return response.status(400).json({
-        message: "User Already fillup the form",
+        message: "User has already fillup ",
       });
     }
+
+    const uploadedResponse = await cloudinary.v2.uploader.upload(image, {
+      upload_preset: "",
+    });
+
+    if (
+      !uploadedResponse ||
+      !uploadedResponse.url ||
+      !uploadedResponse.public_id
+    ) {
+      return response.status(400).json({
+        message: "Error uploading image to Cloudinary",
+      });
+    }
+
+    // Insert into PostgreSQL
     const query = `
-        INSERT INTO public.household (
-          userid, pending, year,
-          lastnamehead1, firstnamehead1, mihead1, exthead1, addresshead1, dateofbirthhead1, agehead1, genderhead1, civilstatushead1, religionhead1, typeofidhead1, idnohead1, mobilenohead1, occupationhead1, skillshead1, companyaddresshead1, collegehead1, highschoolhead1, elementaryhead1, vocationalcoursehead1,
-          lastnamehead2, firstnamehead2, mihead2, exthead2, addresshead2, dateofbirthhead2, agehead2, genderhead2, civilstatushead2, religionhead2, typeofidhead2, idnohead2, mobilenohead2, occupationhead2, skillshead2, companyaddresshead2, collegehead2, highschoolhead2, elementaryhead2, vocationalcoursehead2,
-          members, children,
-          question1, question2, renting, question3, question4, question5, question6
-        )
-        VALUES (
-          $1, $2,
-          $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22,
-          $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42,
-          $43, $44,
-          $45, $46, $47, $48, $49, $50, $51, $52
-        )
-        RETURNING *;
-      `;
+      INSERT INTO public.household (
+        userid, pending, year,
+        lastnamehead1, firstnamehead1, mihead1, exthead1, addresshead1, dateofbirthhead1, agehead1, genderhead1, civilstatushead1, religionhead1, typeofidhead1, idnohead1, mobilenohead1, occupationhead1, skillshead1, companyaddresshead1, collegehead1, highschoolhead1, elementaryhead1, vocationalcoursehead1,
+        lastnamehead2, firstnamehead2, mihead2, exthead2, addresshead2, dateofbirthhead2, agehead2, genderhead2, civilstatushead2, religionhead2, typeofidhead2, idnohead2, mobilenohead2, occupationhead2, skillshead2, companyaddresshead2, collegehead2, highschoolhead2, elementaryhead2, vocationalcoursehead2,
+        members, children, question1, question2, renting, question3, question4, question5, question6, image, cloudinaryid
+      )
+      VALUES (
+        $1, $2, $3,
+        $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22,
+        $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42,
+        $43, $44, $45, $46, $47, $48, $49, $50, $51, $52, $53, $54
+      )
+      RETURNING *;
+    `;
 
     const values = [
       userid,
@@ -142,6 +154,8 @@ export const createHousehold = async (request, response) => {
       question4,
       question5,
       question6,
+      uploadedResponse.url,
+      uploadedResponse.public_id,
     ];
 
     const result = await pool.query(query, values);
@@ -163,6 +177,7 @@ export const createHousehold = async (request, response) => {
     });
   }
 };
+
 export const getAllHousehold = async (request, response) => {
   try {
     const getAllHousehold = await pool.query("SELECT * FROM public.household");
@@ -235,12 +250,15 @@ export const findById = async (request, response) => {
 export const deleteHouseHoldAndHouseMembers = async (request, response) => {
   try {
     const { userid } = request.params;
+    const { cloudinaryid } = request.body;
 
+    if (cloudinaryid) {
+      await cloudinary.v2.uploader.destroy(cloudinaryid);
+    }
     const deleteHouseHold = await pool.query(
       "DELETE FROM public.household WHERE userid = $1;",
       [userid]
     );
-
     const deleteHouseMembers = await pool.query(
       "DELETE FROM public.housemembers WHERE userid = $1;",
       [userid]
