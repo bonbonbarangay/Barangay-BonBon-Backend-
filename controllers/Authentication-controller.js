@@ -68,18 +68,22 @@ export const signUp = async (request, response) => {
     });
   }
 };
-export const updatePassword = async (request, response) => {
+export const updateUser = async (request, response) => {
   try {
     const hash = await bcrypt.genSalt(saltRounds);
     const { id } = request.params;
-    const { password } = request.body;
+
+    const { password, username, emailaddress } = request.body;
     const passwordHast = await bcrypt.hash(password, hash);
 
-    const updatePassword = await pool.query(
-      "UPDATE public.authentication SET password = $1 WHERE id = $2 RETURNING *;",
-      [passwordHast, id]
+    const updateResult = await pool.query(
+      `UPDATE public.authentication 
+       SET password = $1, username = $2, emailaddress = $3  
+       WHERE id = $4 
+       RETURNING *;`,
+      [passwordHast, username, emailaddress, id]
     );
-    if (updatePassword.rowCount === 0) {
+    if (updateResult.rowCount === 0) {
       return response.status(400).json({
         message: "Password Did not Change",
       });

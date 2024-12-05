@@ -2,11 +2,41 @@ import pool from "../dbconfig/database-setup.js";
 
 export const createLocation = async (request, response) => {
   try {
-    const { name, latitude, longitude, color } = request.body;
+    const {
+      projecttitle,
+      projectlocation,
+      contractor,
+      contractpayment,
+      updatestatus,
+      datemonitoring,
+      issues,
+      projectengineer,
+      datestart,
+      overall,
+      color,
+      budgetyear,
+      latitude,
+      longitude,
+    } = request.body;
 
     const createLocation = await pool.query(
-      "INSERT INTO public.locations (name, latitude, longitude, color) VALUES ($1, $2, $3, $4) RETURNING *",
-      [name, latitude, longitude, color]
+      "INSERT INTO public.locations (projecttitle, projectlocation, contractor, contractpayment, updatestatus, datemonitoring, issues, projectengineer, datestart, overall, color, budgetyear, latitude, longitude) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *",
+      [
+        projecttitle,
+        projectlocation,
+        contractor,
+        contractpayment,
+        updatestatus,
+        datemonitoring,
+        issues,
+        projectengineer,
+        datestart,
+        overall,
+        color,
+        budgetyear,
+        latitude,
+        longitude,
+      ]
     );
 
     if (createLocation.rows.length === 0) {
@@ -24,6 +54,7 @@ export const createLocation = async (request, response) => {
     });
   }
 };
+
 export const getAllLocations = async (request, response) => {
   try {
     const result = await pool.query("SELECT * FROM public.locations");
