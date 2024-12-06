@@ -69,24 +69,49 @@ export const getAllLocations = async (request, response) => {
 };
 export const updateLocation = async (request, response) => {
   try {
-    const { id } = request.params;
-    const { name, latitude, longitude, color } = request.body;
+    const {
+      projecttitle,
+      projectlocation,
+      contractor,
+      contractpayment,
+      updatestatus,
+      datemonitoring,
+      issues,
+      projectengineer,
+      datestart,
+      overall,
+      color,
+      budgetyear,
+    } = request.body;
 
-    const result = await pool.query(
-      `UPDATE public.locations 
-         SET name = $1, latitude = $2, longitude = $3, color = $4
-         WHERE id = $5 
-         RETURNING *`,
-      [name, latitude, longitude, color, id]
+    const { id } = request.params;
+
+    const updateLocation = await pool.query(
+      "UPDATE public.locations SET projecttitle = $1, projectlocation = $2, contractor = $3, contractpayment = $4, updatestatus = $5, datemonitoring = $6, issues = $7, projectengineer = $8, datestart = $9, overall = $10, color = $11, budgetyear = $12 WHERE id = $13 RETURNING *",
+      [
+        projecttitle,
+        projectlocation,
+        contractor,
+        contractpayment,
+        updatestatus,
+        datemonitoring,
+        issues,
+        projectengineer,
+        datestart,
+        overall,
+        color,
+        budgetyear,
+        id,
+      ]
     );
 
-    if (result.rows.length === 0) {
+    if (updateLocation.rows.length === 0) {
       return response.status(404).json({ message: "Location not found" });
     }
 
     return response.status(200).json({
       message: "Location updated successfully",
-      location: result.rows[0],
+      location: updateLocation.rows[0],
     });
   } catch (error) {
     return response.status(500).json({
@@ -109,6 +134,34 @@ export const deleteLocation = async (request, response) => {
 
     return response.status(200).json({
       message: "Location deleted successfully",
+      location: result.rows[0],
+    });
+  } catch (error) {
+    return response.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+export const updateLocationDrag = async (request, response) => {
+  try {
+    const { id } = request.params;
+    const { latitude, longitude } = request.body;
+
+    const result = await pool.query(
+      `UPDATE public.locations 
+         SET latitude = $1, longitude = $2 WHERE id = $3 
+         RETURNING *`,
+      [latitude, longitude, id]
+    );
+
+    if (result.rows.length === 0) {
+      return response.status(404).json({ message: "Location not found" });
+    }
+
+    return response.status(200).json({
+      message: "Location updated successfully",
       location: result.rows[0],
     });
   } catch (error) {
