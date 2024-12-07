@@ -63,6 +63,22 @@ export const getAllOfficials = async (request, response) => {
   }
 };
 
+export const getOfficialByPosition = async (request, response) => {
+  try {
+    const { position } = request.body;
+    const getOfficialByPosition = await pool.query(
+      "SELECT * FROM public.officials WHERE position = $1",
+      [position]
+    );
+
+    return response.status(200).json(getOfficialByPosition.rows);
+  } catch (error) {
+    return response.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
 export const updateOfficial = async (request, response) => {
   try {
     const { fullname, position, type, image, cloudinaryid } = request.body;
