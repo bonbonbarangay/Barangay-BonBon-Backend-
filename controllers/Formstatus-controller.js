@@ -9,7 +9,15 @@ export const createFormStatus = async (request, response) => {
     );
 
     if (findUserExist.rowCount > 0) {
-      return response.status(400).json({ message: "userexist" });
+      const result = await pool.query(
+        `UPDATE public.formstatus 
+             SET status = $1 WHERE userid = $2 
+             RETURNING *`,
+        [status, userid]
+      );
+      return response.status(200).json({
+        data: result.rows[0],
+      });
     }
     const createFormstatus = await pool.query(
       "INSERT INTO public.formstatus (userid, status) VALUES ($1, $2) RETURNING *",
@@ -67,29 +75,6 @@ export const updateUserForm = async (request, response) => {
       success: true,
       message: "FormStatus updated successfully",
       data: result.rows[0],
-    });
-  } catch (error) {
-    return response.status(500).json({
-      message: "Internal server error",
-      error: error.message,
-    });
-  }
-};
-export const deleteFormStatus = async (request, response) => {
-  try {
-    const { userid } = request.params;
-    const result = await pool.query(
-      `DELETE FROM public.formstatus WHERE userid = $1 RETURNING *`,
-      [userid]
-    );
-
-    if (result.rows.length === 0) {
-      return response.status(404).json({ message: "Location not found" });
-    }
-
-    return response.status(200).json({
-      message: "Location deleted successfully",
-      location: result.rows[0],
     });
   } catch (error) {
     return response.status(500).json({
