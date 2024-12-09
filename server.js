@@ -10,6 +10,7 @@ import bodyParser from "body-parser";
 import houseMembers from "./routes/HouseMembers-route.js";
 import mapRoutes from "./routes/Map-route.js";
 import formStatusRoute from "./routes/Formstatus-route.js";
+import strategicRoutes from "./routes/Strategic-route.js";
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
@@ -24,6 +25,7 @@ app.use("/household", householdRoutes);
 app.use("/housemembers", houseMembers);
 app.use("/map", mapRoutes);
 app.use("/formstatus", formStatusRoute);
+app.use("/strategic", strategicRoutes);
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
