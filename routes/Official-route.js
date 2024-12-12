@@ -4,12 +4,12 @@ import {
   getAllOfficials,
   updateOfficial,
   deleteOfficial,
-  getOfficialByPosition,
+  getOfficialByPositionType,
 } from "../controllers/Official-controller.js";
 const officialsRoutes = Router();
 
 officialsRoutes.post("/", createOfficial);
-officialsRoutes.post("/position", getOfficialByPosition);
+officialsRoutes.post("/position", getOfficialByPositionType);
 officialsRoutes.get("/", getAllOfficials);
 officialsRoutes.put("/:id", updateOfficial);
 officialsRoutes.delete("/:id", deleteOfficial);

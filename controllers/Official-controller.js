@@ -63,12 +63,12 @@ export const getAllOfficials = async (request, response) => {
   }
 };
 
-export const getOfficialByPosition = async (request, response) => {
+export const getOfficialByPositionType = async (request, response) => {
   try {
-    const { position } = request.body;
+    const { positiontype } = request.body;
     const getOfficialByPosition = await pool.query(
-      "SELECT * FROM public.officials WHERE position = $1",
-      [position]
+      "SELECT * FROM public.officials WHERE type = $1",
+      [positiontype]
     );
 
     return response.status(200).json(getOfficialByPosition.rows);
