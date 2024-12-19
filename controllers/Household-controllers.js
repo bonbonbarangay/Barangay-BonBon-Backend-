@@ -1,5 +1,9 @@
 import pool from "../dbconfig/database-setup.js";
 import cloudinary from "../services/cloudinary.js";
+import "dotenv/config";
+import SendEmail from "../services/nodemailer.js";
+
+const fromEmail = process.env.EMAIL;
 
 export const createHousehold = async (request, response) => {
   try {
@@ -159,13 +163,19 @@ export const createHousehold = async (request, response) => {
     ];
 
     const result = await pool.query(query, values);
-
     if (result.rowCount === 0) {
       return response
         .status(400)
         .json({ message: "Failed to create household" });
     }
-
+    const mailOptions = {
+      from: fromEmail,
+      to: "barangaybonbon2024@gmail.com",
+      subject: "RESIDENT FORM STATUS",
+      text: `Hello,
+      You have received a new resident form for review.`,
+    };
+    await SendEmail(mailOptions);
     return response.status(201).json({
       message: "Household created successfully",
       household: result.rows[0],
