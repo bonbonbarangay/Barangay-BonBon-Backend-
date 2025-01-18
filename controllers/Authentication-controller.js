@@ -133,7 +133,7 @@ export const signUp = async (request, response) => {
     );
 
     const userAccount = createUser.rows[0];
-    const verificationLink = `http://localhost:5173/verify/${userAccount.id}`;
+    const verificationLink = `https://barangay-bonbon.onrender.com/verify/${userAccount.id}`;
 
     const mailOptions = {
       from: fromEmail,
