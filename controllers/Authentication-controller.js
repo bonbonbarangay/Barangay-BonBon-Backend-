@@ -272,7 +272,7 @@ export const verifyOtp = async (request, response) => {
 
     // Check if the account is verified
     if (userAccount.is_verified === false) {
-      const verificationLink = `http://localhost:5173/verify/${userAccount.id}`;
+      const verificationLink = `https://barangay-bonbon.onrender.com/verify/${userAccount.id}`;
 
       const mailOptions = {
         from: fromEmail,
