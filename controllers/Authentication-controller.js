@@ -44,7 +44,7 @@ export const signIn = async (request, response) => {
 
     // Check if account is verified
     if (!userAccount.is_verified) {
-      const verificationLink = `http://localhost:5173/verify/${userAccount.id}`;
+      const verificationLink = `https://barangay-bonbon.onrender.com/verify/${userAccount.id}`;
 
       const mailOptions = {
         from: fromEmail,
@@ -262,7 +262,6 @@ export const verifyOtp = async (request, response) => {
 
     const userAccount = findAccount.rows[0];
 
-    // Check OTP expiration
     if (userAccount.expired === true) {
       return response.status(400).json({ message: "OTP has expired." });
     }
@@ -270,7 +269,6 @@ export const verifyOtp = async (request, response) => {
       return response.status(400).json({ message: "Invalid OTP." });
     }
 
-    // Check if the account is verified
     if (userAccount.is_verified === false) {
       const verificationLink = `https://barangay-bonbon.onrender.com/verify/${userAccount.id}`;
 
