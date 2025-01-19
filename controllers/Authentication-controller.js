@@ -314,3 +314,88 @@ export const verifyOtp = async (request, response) => {
     });
   }
 };
+
+export const getEmailAndgetOtp = async (request, response) => {
+  try {
+    const { emailaddress } = request.body;
+
+    // Check if emailaddress is provided
+    if (!emailaddress) {
+      return response
+        .status(400)
+        .json({ message: "Email address is required." });
+    }
+
+    // Find the user account in the database
+    const findAccount = await pool.query(
+      "SELECT * FROM public.authentication WHERE emailaddress = $1",
+      [emailaddress]
+    );
+
+    if (findAccount.rowCount === 0) {
+      return response.status(400).json({ message: "Email address not found." });
+    }
+
+    const userAccount = findAccount.rows[0];
+
+    const verificationLink = `http://localhost:5173/resetpassword/${userAccount.id}`;
+
+    const mailOptions = {
+      from: fromEmail,
+      to: emailaddress,
+      subject: "Password Reset Request",
+      text: `Hi,\n\nWe received a request to reset your password. Please click the link below to reset your password:\n\n${verificationLink}\n\nIf you did not request a password reset, please ignore this email.\n\nBest regards,\nBarangay BonBon`,
+      html: `<p>Hi,</p><p>We received a request to reset your password. Please click the link below to reset your password:</p><p><a href="${verificationLink}" target="_blank" style="color: blue;">Reset Password</a></p><p>If you did not request a password reset, please ignore this email.</p><p>Best regards,<br>Barangay BonBon</p>`,
+    };
+
+    // Send email with password reset link
+    const emailSent = await SendEmail(mailOptions);
+
+    // Check if email was successfully sent
+    if (!emailSent) {
+      return response.status(500).json({
+        message: "Failed to send password reset email. Please try again later.",
+      });
+    }
+
+    return response.status(200).json({
+      message:
+        "A password reset link has been sent to your email address. Please check your inbox (and spam folder) to reset your password.",
+    });
+  } catch (error) {
+    return response.status(500).json({
+      message: "Internal server error.",
+      error: error.message,
+    });
+  }
+};
+export const resetPassword = async (request, response) => {
+  try {
+    const hash = await bcrypt.genSalt(saltRounds);
+    const { id } = request.params;
+    const { password } = request.body;
+    const passwordHast = await bcrypt.hash(password, hash);
+
+    const updateResult = await pool.query(
+      `UPDATE public.authentication 
+       SET password = $1 
+       WHERE id = $2
+       RETURNING *;`,
+      [passwordHast, id]
+    );
+    if (updateResult.rowCount === 0) {
+      return response.status(400).json({
+        message: "Password Did not Change",
+      });
+    }
+
+    return response.status(200).json({
+      message: "Password Change",
+    });
+  } catch (error) {
+    return response.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
