@@ -338,7 +338,7 @@ export const getEmailAndgetOtp = async (request, response) => {
 
     const userAccount = findAccount.rows[0];
 
-    const verificationLink = `http://localhost:5173/resetpassword/${userAccount.id}`;
+    const verificationLink = `https://barangay-bonbon.onrender.com/resetpassword/${userAccount.id}`;
 
     const mailOptions = {
       from: fromEmail,
