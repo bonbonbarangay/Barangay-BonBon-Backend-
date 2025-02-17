@@ -17,10 +17,11 @@ export const createLocation = async (request, response) => {
       budgetyear,
       latitude,
       longitude,
+      percentage,
     } = request.body;
 
     const createLocation = await pool.query(
-      "INSERT INTO public.locations (projecttitle, projectlocation, contractor, contractpayment, updatestatus, datemonitoring, issues, projectengineer, datestart, overall, color, budgetyear, latitude, longitude) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *",
+      "INSERT INTO public.locations (projecttitle, projectlocation, contractor, contractpayment, updatestatus, datemonitoring, issues, projectengineer, datestart, overall, color, budgetyear, latitude, longitude, percentage) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *",
       [
         projecttitle,
         projectlocation,
@@ -36,6 +37,7 @@ export const createLocation = async (request, response) => {
         budgetyear,
         latitude,
         longitude,
+        percentage,
       ]
     );
 
@@ -82,12 +84,13 @@ export const updateLocation = async (request, response) => {
       overall,
       color,
       budgetyear,
+      percentage,
     } = request.body;
 
     const { id } = request.params;
 
     const updateLocation = await pool.query(
-      "UPDATE public.locations SET projecttitle = $1, projectlocation = $2, contractor = $3, contractpayment = $4, updatestatus = $5, datemonitoring = $6, issues = $7, projectengineer = $8, datestart = $9, overall = $10, color = $11, budgetyear = $12 WHERE id = $13 RETURNING *",
+      "UPDATE public.locations SET projecttitle = $1, projectlocation = $2, contractor = $3, contractpayment = $4, updatestatus = $5, datemonitoring = $6, issues = $7, projectengineer = $8, datestart = $9, overall = $10, color = $11, budgetyear = $12, percentage = $13 WHERE id = $14 RETURNING *",
       [
         projecttitle,
         projectlocation,
@@ -101,6 +104,7 @@ export const updateLocation = async (request, response) => {
         overall,
         color,
         budgetyear,
+        percentage,
         id,
       ]
     );

@@ -5,7 +5,7 @@ const fromEmail = process.env.EMAIL;
 
 export const notificationForUser = async (request, response) => {
   try {
-    const { userid, status } = request.body;
+    const { userid, status, reason } = request.body;
 
     const findEmail = await pool.query(
       "SELECT * FROM public.authentication WHERE id = $1",
@@ -21,7 +21,7 @@ export const notificationForUser = async (request, response) => {
       from: fromEmail,
       to: findEmail.rows[0].emailaddress,
       subject: "RESIDENT FORM STATUS",
-      text: `Your ResidentForm Status is ${status}`,
+      text: `Your ResidentForm Status is ${status} \n\nReason: ${reason} \n\nThank you for using our service. \n\nBest regards,\nBarangay BonBon`,
     };
 
     const emailSent = await SendEmail(mailOptions);

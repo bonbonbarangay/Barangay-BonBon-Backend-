@@ -17,7 +17,7 @@ export const createHouseMembers = async (request, response) => {
 
     const insertPromises = data.map(async (values) => {
       return pool.query(
-        "INSERT INTO public.housemembers (userid, year, fullname, relation, pwd, gender, age, dob, highesteducation,occupation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *",
+        "INSERT INTO public.housemembers (userid, year, fullname, relation, pwd, gender, age, dob, highesteducation,occupation,occupationother) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *",
         [
           values.userid,
           currentYear,
@@ -29,6 +29,7 @@ export const createHouseMembers = async (request, response) => {
           values.dob,
           values.education,
           values.occupation,
+          values.occupationother,
         ]
       );
     });
